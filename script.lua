@@ -452,21 +452,9 @@ end
 local function stopNoClipPlayers()
     if Connections.noclip then Connections.noclip:Disconnect(); Connections.noclip = nil end
 end
-local floatConn = nil
-local function startFloat()
-    if floatConn then floatConn:Disconnect() end
-    floatConn = RunService.Heartbeat:Connect(function()
-        if not Enabled.Float then return end
-        local h = getHRP(); if not h then return end
-        local vel = h.AssemblyLinearVelocity
-        if vel.Y < 0 then
-            h.AssemblyLinearVelocity = Vector3.new(vel.X, 0, vel.Z)
-        end
-    end)
-end
-local function stopFloat()
-    if floatConn then floatConn:Disconnect(); floatConn = nil end
-end
+local floatConn=nil
+local function startFloat() if floatConn then floatConn:Disconnect() end; floatConn=RunService.Heartbeat:Connect(function() if not Enabled.Float then return end; local h=getHRP(); if not h then return end; local v=h.AssemblyLinearVelocity; if v.Y<0 then h.AssemblyLinearVelocity=Vector3.new(v.X,0,v.Z) end end) end
+local function stopFloat() if floatConn then floatConn:Disconnect(); floatConn=nil end end
 local espHighlights = {}
 local function updateESP()
     if not Enabled.ESPPlayers then
@@ -488,7 +476,6 @@ local function updateESP()
         end
     end
 end
-RunService.Heartbeat:Connect(updateESP)
 local stealCache = {}
 local isStealing = false
 local ProgressLabel  = nil
@@ -794,7 +781,7 @@ local function showTab(name)
         end
     end
 end
-local tabNames = {"Combat","Protect","Visual","Settings","Keys","Console"}
+local tabNames = {"Combat","Protect","Visual","Settings","Keys"}
 local pw = math.floor((260-6)/#tabNames)
 for i, tname in ipairs(tabNames) do
     local tb = Instance.new("TextButton", tabBar); tb.Size = UDim2.new(0,pw,1,0)
@@ -1087,8 +1074,6 @@ Toggle("Visual","No Anims","Unwalk",
     function(v) if v then startUnwalk() else stopUnwalk() end end)
 Toggle("Visual","Optimizer+XRay","Optimizer",
     function(v) if v then enableOptimizer() else disableOptimizer() end end)
-Toggle("Visual","Galaxy Sky","GalaxySkyBright",
-    function(v) if v then enableGalaxySkyBright() else disableGalaxySkyBright() end end)
 Toggle("Settings","Inf Jump","Galaxy",
     function(v) if v then startGalaxy() else stopGalaxy() end end)
 do
@@ -1149,7 +1134,6 @@ KeyRow("Keys","Auto Left",     "AUTOWALK")
 KeyRow("Keys","Auto Right",    "AUTORIGHT")
 KeyRow("Keys","Speed On Steal","SPEEDSTEAL")
 KeyRow("Keys","Lock",          "BATAIMBOT")
-KeyRow("Keys","Spam Bat",      "SPAMBOT")
 KeyRow("Keys","NoClip",        "NOCLIPPLAYERS")
 KeyRow("Keys","Float",         "FLOAT")
 KeyRow("Keys","Drop Brainrot", "DROPBRAINROT")
@@ -1258,12 +1242,8 @@ tpDownBtn.MouseButton1Click:Connect(function()
     doTPDown(); tpDownBtn.BackgroundColor3 = C_PRIM_D
     task.delay(0.25, function() tpDownBtn.BackgroundColor3 = C_BG2 end)
 end)
-local _origAutoWalkSetter = VisualSetters.AutoWalkEnabled; VisualSetters.AutoWalkEnabled = function(v, skip)
-    if _origAutoWalkSetter then _origAutoWalkSetter(v, skip) end
-    setZBtnActive(playLBtn, playLStroke, v)
-    AutoWalkEnabled = v
-end
-local _origAutoRightSetter = VisualSetters.AutoRightEnabled; VisualSetters.AutoRightEnabled = function(v, skip)
+local _origAutoRightSetter = VisualSetters.AutoRightEnabled
+VisualSetters.AutoRightEnabled = function(v, skip)
     if _origAutoRightSetter then _origAutoRightSetter(v, skip) end
     setZBtnActive(playRBtn, playRStroke, v)
     AutoRightEnabled = v
@@ -1273,19 +1253,13 @@ UserInputService.InputBegan:Connect(function(input, gp)
     if keyOverlay.Visible and waitingForKey then
         if input.KeyCode == Enum.KeyCode.Escape then
             waitingForKey = nil; keyOverlay.Visible = false
-            for kk, kb in pairs(KeyButtons) do
-                kb.Text = KEYBINDS[kk] and KEYBINDS[kk].Name or "?"; kb.BackgroundColor3 = C_BG3
-            end
+            for kk, kb in pairs(KeyButtons) do kb.Text = KEYBINDS[kk] and KEYBINDS[kk].Name or "?"; kb.BackgroundColor3 = C_BG3 end
             return
         end
         if input.UserInputType == Enum.UserInputType.Keyboard then
             KEYBINDS[waitingForKey] = input.KeyCode
-            if KeyButtons[waitingForKey] then
-                KeyButtons[waitingForKey].Text = input.KeyCode.Name
-                KeyButtons[waitingForKey].BackgroundColor3 = C_BG3
-            end
-            waitingForKey = nil; keyOverlay.Visible = false
-            return
+            if KeyButtons[waitingForKey] then KeyButtons[waitingForKey].Text = input.KeyCode.Name; KeyButtons[waitingForKey].BackgroundColor3 = C_BG3 end
+            waitingForKey = nil; keyOverlay.Visible = false; return
         end
     end
     local kc = input.KeyCode
@@ -1294,8 +1268,8 @@ UserInputService.InputBegan:Connect(function(input, gp)
     elseif kc == KEYBINDS.SPIN then tog("SpinBot",startSpinBot,stopSpinBot)
     elseif kc == KEYBINDS.BATAIMBOT then
         if LockTarget and LockTarget.Character then
-            LockTarget = nil; lockBtn.Text = "Lock"
-            setZBtnActive(lockBtn, lockStroke, false); Enabled.BatAimbot = false; stopBatAimbot()
+            LockTarget = nil; lockBtn.Text = "Lock"; setZBtnActive(lockBtn, lockStroke, false)
+            Enabled.BatAimbot = false; stopBatAimbot()
             if VisualSetters.BatAimbot then VisualSetters.BatAimbot(false) end
         else
             local hrp = getHRP()
@@ -1336,65 +1310,8 @@ task.defer(function()
     if E.NoClipPlayers then startNoClipPlayers() end
     if E.BatAimbot then startBatAimbot() end
     if E.Optimizer then enableOptimizer() end
-    if E.GalaxySkyBright then enableGalaxySkyBright() end
     if E.Unwalk then startUnwalk() end
     if E.AutoWalkEnabled then AutoWalkEnabled=true; startAutoWalk() end
     if E.AutoRightEnabled then AutoRightEnabled=true; startAutoRight() end
 end)
-print("[S7 Hub] Loaded!"
--- CONSOLE TAB
-do
-    local ConFrame = makeItem("Console", 320)
-    ConFrame.Size = UDim2.new(1,0,0,320)
-    local conScroll = Instance.new("ScrollingFrame", ConFrame)
-    conScroll.Size = UDim2.new(1,-8,1,-36); conScroll.Position = UDim2.new(0,4,0,32)
-    conScroll.BackgroundTransparency=1; conScroll.BorderSizePixel=0
-    conScroll.ScrollBarThickness=2; conScroll.ScrollBarImageColor3=C_PRIMARY
-    conScroll.AutomaticCanvasSize=Enum.AutomaticSize.Y; conScroll.ZIndex=3
-    local conLayout = Instance.new("UIListLayout",conScroll)
-    conLayout.SortOrder=Enum.SortOrder.LayoutOrder; conLayout.Padding=UDim.new(0,2)
-    local searchBox = Instance.new("TextBox",ConFrame)
-    searchBox.Size=UDim2.new(1,-8,0,24); searchBox.Position=UDim2.new(0,4,0,4)
-    searchBox.BackgroundColor3=C_BG3; searchBox.BorderSizePixel=0
-    searchBox.PlaceholderText="Search..."; searchBox.Text=""
-    searchBox.TextColor3=C_WHITE; searchBox.PlaceholderColor3=C_GREY
-    searchBox.Font=Enum.Font.GothamBold; searchBox.TextSize=11; searchBox.ZIndex=4
-    searchBox.ClearTextOnFocus=false
-    Instance.new("UICorner",searchBox).CornerRadius=UDim.new(0,6)
-    local logOrder=0
-    local function addLog(msg, color)
-        logOrder=logOrder+1
-        local lbl=Instance.new("TextLabel",conScroll)
-        lbl.Size=UDim2.new(1,0,0,0); lbl.AutomaticSize=Enum.AutomaticSize.Y
-        lbl.BackgroundTransparency=1; lbl.Text=msg
-        lbl.TextColor3=color or C_WHITE; lbl.Font=Enum.Font.RobotoMono or Enum.Font.Code
-        lbl.TextSize=10; lbl.TextXAlignment=Enum.TextXAlignment.Left
-        lbl.TextWrapped=true; lbl.ZIndex=3; lbl.LayoutOrder=logOrder
-        -- auto scroll to bottom
-        task.defer(function() conScroll.CanvasPosition=Vector2.new(0,math.huge) end)
-    end
-    -- Hook print/warn/error
-    local _print=print; local _warn=warn
-    print=function(...)
-        local args={}; for _,v in ipairs({...}) do table.insert(args,tostring(v)) end
-        local msg=table.concat(args,"	"); _print(msg)
-        addLog("[print] "..msg, C_WHITE)
-    end
-    warn=function(...)
-        local args={}; for _,v in ipairs({...}) do table.insert(args,tostring(v)) end
-        local msg=table.concat(args,"	"); _warn(msg)
-        addLog("[warn] "..msg, Color3.fromRGB(255,200,50))
-    end
-    -- Search filter
-    searchBox:GetPropertyChangedSignal("Text"):Connect(function()
-        local q=searchBox.Text:lower()
-        for _,lbl in ipairs(conScroll:GetChildren()) do
-            if lbl:IsA("TextLabel") then
-                lbl.Visible=(q=="" or lbl.Text:lower():find(q,1,true)~=nil)
-            end
-        end
-    end)
-    addLog("[S7 Hub] Console ready", C_PRIMARY)
-end
-
-)
+print("[S7 Hub] Loaded!")
