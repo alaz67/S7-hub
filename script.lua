@@ -708,6 +708,20 @@ local KeyButtons    = {}
 local waitingForKey = nil
 local floatPanels   = {}
 local tpLeftSetSel, tpRightSetSel = nil, nil
+local C_PRIMARY   = Color3.fromRGB(138, 43, 226)
+local C_PRIM_L    = Color3.fromRGB(170, 80, 255)
+local C_PRIM_D    = Color3.fromRGB(90,  20, 150)
+local C_BG        = Color3.fromRGB(12,  12,  15)
+local C_BG2       = Color3.fromRGB(20,  20,  25)
+local C_BG3       = Color3.fromRGB(30,  30,  35)
+local C_ITEM      = Color3.fromRGB(20,  20,  25)
+local C_BORDER    = Color3.fromRGB(60,  40,  90)
+local C_WHITE     = Color3.fromRGB(255,255,255)
+local C_GREY      = Color3.fromRGB(160,160,170)
+local C_GREY2     = Color3.fromRGB(50,  50,  60)
+local C_RED       = Color3.fromRGB(220,  50,  60)
+local C_OFF       = Color3.fromRGB(50,  50,  60)
+
 sg = Instance.new("ScreenGui"); sg.Name = "S7Hub"; sg.ResetOnSpawn = false
 sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling; sg.IgnoreGuiInset = true
 sg.Parent = PlayerGui
